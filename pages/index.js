@@ -15,24 +15,35 @@ export async function getServerSideProps({ query }) {
     const pid = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const key = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
     try {
+      // Tambah timeout 5 detik agar SSR tidak hang
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       const res = await fetch(
-        `https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/resellers?key=${key}&pageSize=200`
+        `https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/resellers?key=${key}&pageSize=200`,
+        { signal: controller.signal }
       );
+      clearTimeout(timeout);
       const data = await res.json();
       if (data.documents) {
         for (const doc of data.documents) {
           const f = doc.fields || {};
-          if ((f.code?.stringValue || '').toLowerCase() === ref.toLowerCase()) {
+          const code = (f.code?.stringValue || '').toLowerCase();
+          const refLower = ref.toLowerCase();
+          if (code === refLower) {
             refDataSSR = {
-              nama:  f.nama?.stringValue || null,
+              nama:  f.nama?.stringValue  || null,
               label: f.label?.stringValue || null,
-              wa:    f.wa?.stringValue || null,
+              wa:    f.wa?.stringValue    || null,
+              code:  f.code?.stringValue  || null,
             };
             break;
           }
         }
       }
-    } catch (e) {}
+      console.log('[SSR] ref:', ref, '=> refDataSSR:', refDataSSR);
+    } catch (e) {
+      console.error('[SSR] Firestore fetch error:', e.message);
+    }
   }
 
   return { props: { refDataSSR } };
@@ -61,22 +72,39 @@ export default function LandingPage({ refDataSSR }) {
     const pid = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const key = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
     if (!pid || !key) return;
+    console.log('[client] Fetching reseller for refCode:', refCode);
     fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/resellers?key=${key}&pageSize=200`)
       .then(r => r.json())
       .then(d => {
-        if (!d.documents) return;
+        if (!d.documents) {
+          console.warn('[client] No documents in Firestore response:', d);
+          return;
+        }
+        console.log('[client] Total reseller docs:', d.documents.length);
+        let found = false;
         for (const doc of d.documents) {
           const f = doc.fields || {};
-          if ((f.code?.stringValue || '').toLowerCase() === refCode.toLowerCase()) {
-            setRefData({
+          const code = (f.code?.stringValue || '').toLowerCase();
+          if (code === refCode.toLowerCase()) {
+            const data = {
               nama:  f.nama?.stringValue,
               label: f.label?.stringValue,
               wa:    f.wa?.stringValue,
-            });
+              code:  f.code?.stringValue,
+            };
+            console.log('[client] Reseller found:', data);
+            setRefData(data);
+            found = true;
             break;
           }
         }
-      }).catch(() => {});
+        if (!found) {
+          console.warn('[client] Reseller not found for code:', refCode);
+          // Log semua code yang ada untuk debug
+          const allCodes = d.documents.map(doc => doc.fields?.code?.stringValue).filter(Boolean);
+          console.log('[client] Available codes:', allCodes);
+        }
+      }).catch(e => console.error('[client] Fetch error:', e));
   // router.isReady memastikan useEffect jalan ulang setelah router siap
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.isReady]);
