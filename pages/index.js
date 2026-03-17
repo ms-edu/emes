@@ -71,11 +71,21 @@ export default function LandingPage({ refDataSSR }) {
   }, [ref]);
 
   useEffect(() => {
-    if (bannerRef.current && refData) {
-      const bh = bannerRef.current.offsetHeight;
-      const pg = document.getElementById('page-home');
-      if (pg) pg.style.marginTop = bh + 'px';
-    }
+    const updateBannerHeight = () => {
+      if (bannerRef.current && refData) {
+        const bh = bannerRef.current.offsetHeight;
+        // Set CSS variable --banner-h agar hero section menyesuaikan padding-top otomatis
+        document.documentElement.style.setProperty('--banner-h', bh + 'px');
+      } else {
+        document.documentElement.style.setProperty('--banner-h', '0px');
+      }
+    };
+    updateBannerHeight();
+    window.addEventListener('resize', updateBannerHeight);
+    return () => {
+      window.removeEventListener('resize', updateBannerHeight);
+      document.documentElement.style.setProperty('--banner-h', '0px');
+    };
   }, [refData]);
 
   useEffect(() => {
