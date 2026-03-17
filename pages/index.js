@@ -40,15 +40,24 @@ export async function getServerSideProps({ query }) {
 
 export default function LandingPage({ refDataSSR }) {
   const router = useRouter();
-  const { ref } = router.query;
   const [refData, setRefData] = useState(refDataSSR || null);
   const bannerRef = useRef(null);
 
+  // Ambil ref code dari URL — router.query belum reliable di render pertama,
+  // jadi langsung baca window.location.search sebagai sumber utama
+  function getRefCode() {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get('ref')) return p.get('ref');
+    }
+    return router.query?.ref || null;
+  }
+
   useEffect(() => {
-    if (!ref) return;
-    localStorage.setItem('ref', ref);
-    // Jika data referral sudah ada dari SSR, tidak perlu fetch ulang
-    if (refData) return;
+    const refCode = getRefCode();
+    if (!refCode) return;
+    localStorage.setItem('ref', refCode);
+    if (refData) return; // SSR sudah berhasil, skip fetch
     const pid = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
     const key = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
     if (!pid || !key) return;
@@ -58,7 +67,7 @@ export default function LandingPage({ refDataSSR }) {
         if (!d.documents) return;
         for (const doc of d.documents) {
           const f = doc.fields || {};
-          if ((f.code?.stringValue || '').toLowerCase() === ref.toLowerCase()) {
+          if ((f.code?.stringValue || '').toLowerCase() === refCode.toLowerCase()) {
             setRefData({
               nama:  f.nama?.stringValue,
               label: f.label?.stringValue,
@@ -68,13 +77,29 @@ export default function LandingPage({ refDataSSR }) {
           }
         }
       }).catch(() => {});
-  }, [ref]);
+  // router.isReady memastikan useEffect jalan ulang setelah router siap
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady]);
 
   useEffect(() => {
-    if (bannerRef.current && refData) {
-      const bh = bannerRef.current.offsetHeight;
-      const pg = document.getElementById('page-home');
-      if (pg) pg.style.marginTop = bh + 'px';
+    if (refData) {
+      // Set variabel global agar LP_JS (sendWA, submitSchoolData) pakai nomor/nama reseller
+      if (refData.wa)   window._resellerWA   = refData.wa.replace(/\D/g, '');
+      if (refData.nama) window._resellerNama = refData.nama;
+
+      // Update label nama reseller di modal WA
+      const labelEl = document.querySelector('[data-reseller-label]');
+      if (labelEl && refData.nama) labelEl.textContent = refData.nama;
+
+      // Hitung tinggi banner setelah render lalu atur margin page-home
+      requestAnimationFrame(() => {
+        if (bannerRef.current) {
+          const bh = bannerRef.current.offsetHeight;
+          document.documentElement.style.setProperty('--banner-h', bh + 'px');
+          const pg = document.getElementById('page-home');
+          if (pg) pg.style.marginTop = bh + 'px';
+        }
+      });
     }
   }, [refData]);
 
