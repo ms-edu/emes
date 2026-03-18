@@ -16,8 +16,8 @@ const SCREENSHOTS = {
   ss5: { url: 'https://i.imgur.com/ilOarlT.png', label: 'Bank Soal'             },
   ss6: { url: 'https://i.imgur.com/itVIzOs.png', label: 'Analisis Butir Soal'   },
   ss7: { url: 'https://i.imgur.com/yZVcuaK.png', label: 'Hasil & Export Excel'  },
-  ss8: { url: 'https://i.imgur.com/4lttN6Z.png', label: 'Detail Jawaban'},
-  ss9: { url: 'https://i.imgur.com/JuHMw0k.png', label: 'Tampilan Ujian'  },
+  ss8: { url: 'https://i.imgur.com/cgeP4r5.png', label: 'Detail Jawaban'},
+  ss9: { url: 'https://i.imgur.com/XUDA0al.png', label: 'Tampilan Ujian'  },
 };
 // ─────────────────────────────────────────────────────────────────────────
 
