@@ -9,7 +9,7 @@ import Head from 'next/head';
 // ║  Contoh: https://i.imgur.com/AbCdEfG.png                        ║
 // ╚══════════════════════════════════════════════════════════════════╝
 const SCREENSHOTS = {
-  ss1: { url: 'https://i.imgur.com/YiFxGg9.png', label: 'Login Siswa'           },
+  ss1: { url: 'https://i.imgur.com/EoYocR5.png', label: 'Login Siswa'           },
   ss2: { url: 'https://i.imgur.com/h2z8MkE.png', label: 'Dashboard Admin'       },
   ss3: { url: 'https://i.imgur.com/JuHMw0k.png', label: 'Jadwal Ujian'         },
   ss4: { url: 'https://i.imgur.com/FwVWpyl.png', label: 'Monitor Real-time'     },
