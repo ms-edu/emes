@@ -11,7 +11,7 @@ import Head from 'next/head';
 const SCREENSHOTS = {
   ss1: { url: 'https://i.imgur.com/YiFxGg9.png', label: 'Login Siswa'           },
   ss2: { url: 'https://i.imgur.com/h2z8MkE.png', label: 'Dashboard Admin'       },
-  ss3: { url: 'https://i.imgur.com/Wg4jlQV.png', label: 'Jadwal Ujian'         },
+  ss3: { url: 'https://i.imgur.com/JuHMw0k.png', label: 'Jadwal Ujian'         },
   ss4: { url: 'https://i.imgur.com/FwVWpyl.png', label: 'Monitor Real-time'     },
   ss5: { url: 'https://i.imgur.com/ilOarlT.png', label: 'Bank Soal'             },
   ss6: { url: 'https://i.imgur.com/itVIzOs.png', label: 'Analisis Butir Soal'   },
