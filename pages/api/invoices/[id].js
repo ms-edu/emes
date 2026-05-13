@@ -19,9 +19,21 @@ export default async function handler(req, res) {
       const doc = await db.collection('invoices').doc(id).get();
       if (!doc.exists) return res.status(404).json({ error: 'Invoice tidak ditemukan.' });
       const old = doc.data();
-      const { nama_sekolah=old.nama_sekolah, kab_kota=old.kab_kota, provinsi=old.provinsi, versi=old.versi, masa_berlaku=old.masa_berlaku, harga=old.harga, diskon=old.diskon, catatan=old.catatan, ttd_nama=old.ttd_nama, ttd_jabatan=old.ttd_jabatan, ttd_image=old.ttd_image, stempel_image=old.stempel_image, status=old.status, tanggal=old.tanggal } = req.body;
+      const {
+        nama_sekolah=old.nama_sekolah, kab_kota=old.kab_kota, provinsi=old.provinsi,
+        versi=old.versi, masa_berlaku=old.masa_berlaku, harga=old.harga, diskon=old.diskon,
+        catatan=old.catatan, ttd_nama=old.ttd_nama, ttd_jabatan=old.ttd_jabatan,
+        ttd_image=old.ttd_image, stempel_image=old.stempel_image,
+        status=old.status, tanggal=old.tanggal, reseller_id=old.reseller_id
+      } = req.body;
       const total = Math.max(0, parseInt(harga) - parseInt(diskon));
-      const updates = { nama_sekolah, kab_kota, provinsi, versi, masa_berlaku, harga: parseInt(harga), diskon: parseInt(diskon), total, catatan, ttd_nama, ttd_jabatan, ttd_image, stempel_image, status, tanggal };
+      const updates = {
+        nama_sekolah, kab_kota, provinsi, versi, masa_berlaku,
+        harga: parseInt(harga), diskon: parseInt(diskon), total,
+        catatan, ttd_nama, ttd_jabatan, ttd_image, stempel_image,
+        status, tanggal, reseller_id,
+        updated_at: new Date().toISOString()
+      };
       await db.collection('invoices').doc(id).update(updates);
       return res.json({ data: { id, ...old, ...updates } });
     } catch (e) { return res.status(500).json({ error: e.message }); }
